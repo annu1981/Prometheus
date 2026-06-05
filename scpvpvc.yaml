@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus-pv-volume
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 30Gi
+  hostPath:
+    path: /var/nfsshare/mht/prometheus-mhqa/prometheus-qa-db
+    type: ""
+  storageClassName: manual
+  volumeMode: Filesystem
