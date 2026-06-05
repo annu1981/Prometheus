@@ -1,0 +1,12 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: alertmanager
+  namespace: istio-system
+spec:
+  host: prometheus-kube-prometheus-alertmanager
+  subsets:
+  - name: v1
+    labels:
+      app: prometheus
