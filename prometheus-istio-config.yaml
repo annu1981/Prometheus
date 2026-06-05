@@ -1,0 +1,82 @@
+prometheus:
+  enabled: true
+  prometheusSpec:
+    routePrefix: "/prometheus/"
+    replicas: 1
+    retention: 30d
+    enableFeatures:
+      - exemplar-storage
+      - extra-scrape-metrics
+    enableRemoteWriteReceiver: true
+    externalUrl: "https://example.com/prometheus/"
+    storageSpec:
+      volumeClaimTemplate:
+        metadata:
+          name: prometheus-prometheus-kube-prometheus-prometheus-db
+        spec:
+          storageClassName: manual
+          volumeName: prometheus-pv-volume
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 30Gi
+    additionalScrapeConfigs:   
+      - job_name: 'istiod'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - istio-system
+                
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: istiod;http-monitoring
+
+      - job_name: 'envoy-stats'
+        metrics_path: /stats/prometheus
+        kubernetes_sd_configs:
+          - role: pod
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_container_port_name]
+            action: keep
+            regex: '.*-envoy-prom'
+      - job_name: external-secrets-status
+        static_configs:
+          - targets: ['external-secrets-metrics.external-secrets.svc.cluster.local:8080']
+            
+grafana:
+  enabled: true
+  adminPassword: "MhDbTG9s6bBx"
+  persistence:
+    enabled: false
+    accessModes: ["ReadWriteOnce"]
+    size: 10Gi
+  sidecar:
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      url: http://prometheus-kube-prometheus-prometheus.istio-system:9090/prometheus/
+      exemplarTraceIdDestinations:
+        datasourceUid: Jaeger
+        traceIdLabelName: traceID
+    serviceMonitor:
+      enabled: true
+      path: "/prometheus/metrics"
+  grafana.ini:
+    server:
+      domain: 'example.com'
+      root_url: "%(protocol)s://%(domain)s/grafana"
+      serve_from_sub_path: false
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 1
+    routePrefix: /alerts
+    externalUrl: https://example.com/alerts  ### mention ur domain name
+    alertmanagerConfigSelector:
+      matchLabels:
+        resource: prometheus
