@@ -1,0 +1,12 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: grafana
+  namespace: istio-system
+spec:
+  host: prometheus-grafana
+  subsets:
+  - name: v1
+    labels:
+      app: prometheus
