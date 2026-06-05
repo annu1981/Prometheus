@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alert-config
+  labels:
+    resource: prometheus
+spec:
+  route:
+    groupBy: ["alertname","severity"]
+    groupInterval: 5s
+    repeatInterval: 1m
+    receiver: "webhook"
+  receivers:
+    - name: "webhook"
+      webhookConfigs:
+        - url: "http://prometheus-msteams:2000/teams"
