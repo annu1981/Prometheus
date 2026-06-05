@@ -1,0 +1,21 @@
+---
+replicaCount: 1
+image:
+  repository: quay.io/prometheusmsteams/prometheus-msteams
+  tag: v1.5.2
+
+connectors:
+# in alertmanager, this will be used as http://prometheus-msteams:2000/teams
+- teams: https://quantela1.webhook.office.com/webhookb2/be2803e5-0f6c-49d2-ac3d-78c526f06466@1732856a-e926-469e-b45e-4ad45ec522a2/IncomingWebhook/f7797425483b4cb5a94c42e2124f7fbf/33b47f3a-2952-405c-8630-75e2be841fc1/V2i_lX5OCne6oTHVlWSTQIC3KYiSb78F4Ll9bbpWQaFhU1
+
+container:
+  additionalArgs:
+    - -debug
+
+# Enable metrics for prometheus operator
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus # change this accordingly
+    scrapeInterval: 30s
